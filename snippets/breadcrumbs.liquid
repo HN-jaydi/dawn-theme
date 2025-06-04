@@ -49,42 +49,56 @@
   {% endif %}
 
 {% elsif request.page_type == 'product' %}
-  <nav>
-    {% assign category_ancestor = product.category.ancestors | reverse %}
+  {% if product.category != blank and product.category != 'Uncategorized' %}
+    <nav>
+      {% assign category_ancestor = product.category.ancestors | reverse %}
 
-    {% for category in category_ancestor %}
-      {% assign category_handle = category | handleize %}
-      {% assign collection_exists = collections[category_handle] %}
-      {% assign page_exists = pages[category_handle] %}
+      {% for category in category_ancestor %}
+        {% assign category_handle = category | handleize %}
+        {% assign collection_exists = collections[category_handle] %}
+        {% assign page_exists = pages[category_handle] %}
 
-      {% if collection_exists %}
-        {% assign category_url = collection_exists.url %}
-      {% elsif page_exists %}
-        {% assign category_url = page_exists.url %}
+        {% if collection_exists %}
+          {% assign category_url = collection_exists.url %}
+        {% elsif page_exists %}
+          {% assign category_url = page_exists.url %}
+        {% else %}
+          {% assign category_url = '/collections/' | append: category_handle %}
+        {% endif %}
+
+        <a href="{{ category_url }}">{{ category }}</a>
+        <span>/</span>
+      {% endfor %}
+
+      {%- assign current_category_handle = product.category | handleize -%}
+      {% assign current_collection_exists = collections[current_category_handle] %}
+      {% assign current_page_exists = pages[current_category_handle] %}
+
+      {% if current_collection_exists %}
+        {% assign current_url = current_collection_exists.url %}
+      {% elsif current_page_exists %}
+        {% assign current_url = current_page_exists.url %}
       {% else %}
-        {% assign category_url = '/collections/' | append: category_handle %}
+        {% assign current_url = '/collections/' | append: current_category_handle %}
       {% endif %}
 
-      <a href="{{ category_url }}">{{ category }}</a>
-      <span>/</span>
-    {% endfor %}
-
-    {%- assign current_category_handle = product.category | handleize -%}
-    {% assign current_collection_exists = collections[current_category_handle] %}
-    {% assign current_page_exists = pages[current_category_handle] %}
-
-    {% if current_collection_exists %}
-      {% assign current_url = current_collection_exists.url %}
-    {% elsif current_page_exists %}
-      {% assign current_url = current_page_exists.url %}
-    {% else %}
-      {% assign current_url = '/collections/' | append: current_category_handle %}
-    {% endif %}
-
-    <a href="{{ current_url }}">{{ product.category }}</a>
-  </nav>
+      <a href="{{ current_url }}">{{ product.category }}</a>
+    </nav>
+  {% else %}
+    {% assign collection_handle = product.collections.first.handle %}
+    {% assign collection_breadcrumbs = collections[collection_handle].metafields.custom.breadcrumbs.value %}
+    <nav>
+      {% for breadcrumb in collection_breadcrumbs %}
+        <a href="{{ breadcrumb.link.value.url }}">{{ breadcrumb.link.value.title }}</a>
+        {% unless forloop.last %}
+          <span>/</span>
+        {% endunless %}
+      {% endfor %}
+    </nav>
+  {% endif %}
 {% endif %}
 
 <script>
-  console.log({{ collection_breadcrumbs | json }})
+  console.log({{ product.collections | json }})
+  console.log({{ collections["laptops"].metafields.custom.breadcrumbs.value}})
 </script>
