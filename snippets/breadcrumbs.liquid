@@ -3,7 +3,7 @@
   <nav class="breadcrumbs" role="navigation" aria-label="breadcrumbs">
     {% assign found = false %}
 
-    {% for level1 in linklists['main-menu'].links %}
+    {% for level1 in linklists['navigation'].links %}
       {% if level1.url == current_url %}
         <span>{{ level1.title }}</span>
         {% assign found = true %}
